@@ -63,17 +63,3 @@ export const modifyPrompt = async (current: string, instruction: string) => {
   });
   return { text: response.text?.trim() || current, usage: response.usageMetadata as TokenUsage };
 };
-
-export const generatePreviewImage = async (prompt: string) => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash-image',
-    contents: { parts: [{ text: prompt }] },
-    config: { imageConfig: { aspectRatio: "1:1" } }
-  });
-  const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
-  return {
-    url: imagePart?.inlineData ? `data:image/png;base64,${imagePart.inlineData.data}` : "",
-    usage: response.usageMetadata as TokenUsage
-  };
-};

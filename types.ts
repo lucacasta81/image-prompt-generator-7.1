@@ -18,9 +18,7 @@ export interface GeneratedPrompt {
   title: string;
   content: string;
   config: PromptConfig;
-  previewUrl?: string;
   sourceImageUrl?: string;
-  isGeneratingPreview?: boolean;
   usage?: TokenUsage;
 }
 

@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { VisualStyle, LightingMode, Perspective, GeneratedPrompt, TokenUsage, ImageGenerator, PromptConfig } from './types';
-import { expandPrompt, generatePreviewImage, extractPromptFromImage } from './services/geminiService';
+import { VisualStyle, LightingMode, Perspective, GeneratedPrompt, ImageGenerator, PromptConfig } from './types';
+import { expandPrompt, extractPromptFromImage } from './services/geminiService';
 import { Button } from './components/Button';
 import { PromptCard } from './components/PromptCard';
 import { OnboardingGuide } from './components/OnboardingGuide';
@@ -9,10 +9,6 @@ import { OnboardingGuide } from './components/OnboardingGuide';
 const STORAGE_KEY = 'promptcraft_v4_data';
 
 const App: React.FC = () => {
-  // Tentativo di recupero chiave, ma non blocchiamo l'esecuzione
-  const apiKey = process.env.API_KEY;
-  const isKeyLikelyMissing = !apiKey || apiKey === "undefined" || apiKey === "";
-  
   const [mode, setMode] = useState<'gen' | 'vis'>('gen');
   const [seed, setSeed] = useState('');
   const [config, setConfig] = useState<PromptConfig>({
@@ -37,26 +33,21 @@ const App: React.FC = () => {
         const { results: r, tokens: t } = JSON.parse(saved);
         setResults(r || []);
         setTokens(t || 0);
-      } catch (e) { console.warn("Cache clear"); }
+      } catch (e) { console.warn("Cache reset"); }
     }
-
-    if (!localStorage.getItem('promptcraft_visited')) {
-      setShowOnboarding(true);
-    }
+    if (!localStorage.getItem('promptcraft_visited')) setShowOnboarding(true);
   }, []);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ results: results.slice(0, 15), tokens }));
   }, [results, tokens]);
 
-  const addTokens = (u?: TokenUsage) => u && setTokens(prev => prev + u.totalTokenCount);
-
   const handleAction = async (isDice = false) => {
     setLoading(true);
     try {
       if (mode === 'gen') {
         const res = await expandPrompt(isDice ? "SURPRISE_ME: Artistic" : seed, config);
-        addTokens(res.usage);
+        setTokens(prev => prev + (res.usage?.totalTokenCount || 0));
         const news = res.prompts.map(p => ({ 
           id: Math.random().toString(36).substr(2, 9), 
           title: p.title, 
@@ -68,7 +59,7 @@ const App: React.FC = () => {
         setSeed('');
       } else if (preview) {
         const res = await extractPromptFromImage(preview.base64.split(',')[1], preview.mime, config);
-        addTokens(res.usage);
+        setTokens(prev => prev + (res.usage?.totalTokenCount || 0));
         setResults(prev => [{ 
           id: Math.random().toString(36).substr(2, 9), 
           title: "Neural Scan", 
@@ -79,37 +70,10 @@ const App: React.FC = () => {
         }, ...prev]);
       }
     } catch (e: any) { 
-      console.error("Action error:", e);
-      if (isKeyLikelyMissing) {
-        alert("ERRORE CHIAVE: Vercel non sta inviando la API_KEY al browser. Assicurati che non ci siano spazi vuoti nel valore della variabile su Vercel e fai un 'Redeploy'.");
-      } else {
-        alert("ERRORE GEMINI: La chiave potrebbe essere errata o il servizio è sovraccarico.");
-      }
+      console.error(e);
+      alert("System Error: Interaction failed. Ensure environment API_KEY is valid.");
     }
     setLoading(false);
-  };
-
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setPreview({ base64: ev.target?.result as string, mime: file.type });
-        setMode('vis');
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handlePreview = async (id: string, content: string) => {
-    setResults(prev => prev.map(p => p.id === id ? { ...p, isGeneratingPreview: true } : p));
-    try {
-      const res = await generatePreviewImage(content);
-      addTokens(res.usage);
-      setResults(prev => prev.map(p => p.id === id ? { ...p, previewUrl: res.url, isGeneratingPreview: false } : p));
-    } catch {
-      setResults(prev => prev.map(p => p.id === id ? { ...p, isGeneratingPreview: false } : p));
-    }
   };
 
   return (
@@ -128,11 +92,13 @@ const App: React.FC = () => {
         </div>
         <div className="flex items-center gap-6">
           <div className="hidden sm:block text-[9px] font-black uppercase tracking-widest text-zinc-600">
-            Usage: {tokens.toLocaleString()} tokens
+            {`Usage: ${tokens.toLocaleString()} tokens`}
           </div>
-          <nav className="flex bg-zinc-900 p-1 rounded-xl border border-white/10">
-            <button onClick={() => setMode('gen')} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'gen' ? 'bg-white text-black' : 'text-zinc-500 hover:text-white'}`}>Architect</button>
-            <button onClick={() => setMode('vis')} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'vis' ? 'bg-white text-black' : 'text-zinc-500 hover:text-white'}`}>Vision</button>
+          <nav className="flex items-center gap-4">
+            <div className="flex bg-zinc-900 p-1 rounded-xl border border-white/10">
+              <button onClick={() => setMode('gen')} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'gen' ? 'bg-white text-black' : 'text-zinc-500 hover:text-white'}`}>Architect</button>
+              <button onClick={() => setMode('vis')} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'vis' ? 'bg-white text-black' : 'text-zinc-500 hover:text-white'}`}>Vision</button>
+            </div>
           </nav>
         </div>
       </header>
@@ -161,7 +127,17 @@ const App: React.FC = () => {
                   <p className="text-[9px] font-black uppercase text-zinc-600 mb-1 tracking-widest">Vision Reference</p>
                   <button onClick={() => fileInputRef.current?.click()} className="text-sm font-bold hover:text-zinc-400 transition-colors uppercase tracking-widest">Choose Image</button>
                 </div>
-                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFile} />
+                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                      setPreview({ base64: ev.target?.result as string, mime: file.type });
+                      setMode('vis');
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }} />
                 <Button onClick={() => handleAction()} isLoading={loading} disabled={!preview} className="rounded-2xl px-12">Deconstruct</Button>
               </div>
             )}
@@ -191,10 +167,9 @@ const App: React.FC = () => {
             <PromptCard 
               key={res.id} 
               prompt={res} 
-              onGeneratePreview={handlePreview}
               onCopy={t => navigator.clipboard.writeText(t)}
               onUpdate={(id, c, u) => {
-                addTokens(u);
+                if(u) setTokens(prev => prev + u.totalTokenCount);
                 setResults(prev => prev.map(p => p.id === id ? { ...p, content: c } : p));
               }}
             />
