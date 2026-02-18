@@ -34,8 +34,8 @@ const App: React.FC = () => {
   const [tokens, setTokens] = useState(0);
   const [preview, setPreview] = useState<{base64: string, mime: string} | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  // Default to true to allow immediate use. We only flip to false if an API call explicitly fails with a "key required" error.
-  const [isKeyConnected, setIsKeyConnected] = useState<boolean>(true);
+  // Default to null to indicate initial checking state.
+  const [isKeyConnected, setIsKeyConnected] = useState<boolean | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -49,6 +49,24 @@ const App: React.FC = () => {
       } catch (e) { console.warn("Cache reset"); }
     }
     if (!localStorage.getItem('promptcraft_visited')) setShowOnboarding(true);
+
+    const checkApiKey = async () => {
+      if (window.aistudio) {
+        try {
+          const connected = await window.aistudio.hasSelectedApiKey();
+          setIsKeyConnected(connected);
+        } catch (error) {
+          console.error("Error checking AI Studio API key:", error);
+          // If there's an error checking the key, assume it's not connected or issue exists.
+          setIsKeyConnected(false); 
+        }
+      } else {
+        // If not in AI Studio context, assume API_KEY is available via process.env
+        // Subsequent API calls will trigger the connection gate if it's not.
+        setIsKeyConnected(true); 
+      }
+    };
+    checkApiKey();
   }, []);
 
   useEffect(() => {
@@ -63,6 +81,7 @@ const App: React.FC = () => {
     } else {
       // If not in AI Studio context, we can't open the key picker.
       alert("Please ensure an API Key is configured in your environment variables.");
+      setIsKeyConnected(false); // Stay in disconnected state if manual configuration is needed.
     }
   };
 
@@ -107,7 +126,22 @@ const App: React.FC = () => {
     setLoading(false);
   };
 
-  // Connection Gate (only shown when explicitly required after a failed attempt)
+  // Initial loading state while checking API key
+  if (isKeyConnected === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-reddish-black">
+        <div className="glass max-w-sm w-full rounded-[2.5rem] p-10 text-center flex flex-col items-center border border-light-red/10 shadow-2xl">
+          <div className="w-16 h-16 rounded-3xl bg-light-red flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(255,232,232,0.1)]">
+            <i className="fas fa-spinner fa-spin text-deep-red text-2xl"></i>
+          </div>
+          <p className="text-light-red text-lg font-black uppercase tracking-wider">Initializing Neural Core...</p>
+          <p className="text-dark-red text-[8px] mt-4 uppercase font-black tracking-widest">Awaiting system handshake</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Connection Gate (only shown when explicitly required after a failed attempt or initial check)
   if (isKeyConnected === false) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-reddish-black">
