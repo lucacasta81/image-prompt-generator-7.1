@@ -5,17 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>PromptCraft AI - Monochrome Master</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind standard script for better production compatibility in demo apps -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        /**
-         * Robust process polyfill for mobile browsers.
-         */
-        (function() {
-            window.process = window.process || {};
-            window.process.env = window.process.env || {};
-            // Non sovrascriviamo se è già definita da Vercel/Ambiente
-        })();
+        // Polyfill per process.env necessario in ambienti browser senza bundler
+        window.process = window.process || { env: {} };
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
@@ -36,7 +31,6 @@
             padding-left: env(safe-area-inset-left);
             padding-right: env(safe-area-inset-right);
             overscroll-behavior-y: none;
-            -webkit-tap-highlight-color: transparent;
         }
 
         .nebula-bg {
