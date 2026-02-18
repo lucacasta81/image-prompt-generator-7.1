@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -18,10 +17,10 @@ export const Button: React.FC<ButtonProps> = ({
   const baseStyles = "px-6 py-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed transform active:scale-95";
   
   const variants = {
-    primary: "bg-white text-black hover:bg-zinc-200 shadow-[0_0_20px_rgba(255,255,255,0.1)]",
-    secondary: "bg-zinc-800 hover:bg-zinc-700 text-white border border-white/10",
-    outline: "border border-zinc-700 hover:border-white text-zinc-400 hover:text-white bg-transparent",
-    ghost: "hover:bg-zinc-900 text-zinc-500 hover:text-white"
+    primary: "bg-light-grey text-blackish hover:bg-medium-grey shadow-[0_0_20px_rgba(224,224,224,0.1)]",
+    secondary: "bg-dark-grey hover:bg-deep-grey text-light-grey border border-light-grey/10",
+    outline: "border border-dark-grey hover:border-light-grey text-medium-grey hover:text-light-grey bg-transparent",
+    ghost: "hover:bg-deep-grey text-medium-grey hover:text-light-grey"
   };
 
   return (

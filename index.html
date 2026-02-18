@@ -13,6 +13,13 @@
             fontFamily: {
               sans: ['Inter', 'sans-serif'],
             },
+            colors: {
+              'light-grey': '#E0E0E0',
+              'medium-grey': '#A0A0A0',
+              'dark-grey': '#505050',
+              'deep-grey': '#202020',
+              'blackish': '#101010',
+            }
           }
         }
       }
@@ -22,8 +29,8 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
         
         :root {
-            --bg-deep: #000000;
-            --accent-primary: #ffffff;
+            --bg-deep: #101010; /* blackish */
+            --accent-primary: #E0E0E0; /* light-grey */
         }
 
         body {
@@ -36,17 +43,17 @@
         }
 
         .glass {
-            background: rgba(15, 15, 15, 0.7);
+            background: rgba(32, 32, 32, 0.7); /* deep-grey with alpha */
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(224, 224, 224, 0.08); /* light-grey with alpha */
         }
 
         .nebula-bg {
             position: fixed;
             inset: 0;
             z-index: -1;
-            background: radial-gradient(circle at 50% 50%, #111 0%, #000 100%);
+            background: radial-gradient(circle at 50% 50%, #202020 0%, #101010 100%); /* deep-grey to blackish */
         }
 
         .nebula-bg::after {
