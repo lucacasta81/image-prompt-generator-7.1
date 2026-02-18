@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { VisualStyle, LightingMode, Perspective, GeneratedPrompt, ImageGenerator, PromptConfig } from './types';
 import { expandPrompt, extractPromptFromImage } from './services/geminiService';
@@ -7,6 +6,14 @@ import { PromptCard } from './components/PromptCard';
 import { OnboardingGuide } from './components/OnboardingGuide';
 
 const STORAGE_KEY = 'promptcraft_v4_data';
+
+// Fix: Merge methods into the existing AIStudio interface instead of redefining the property on Window to avoid modifier and type conflicts.
+declare global {
+  interface AIStudio {
+    hasSelectedApiKey: () => Promise<boolean>;
+    openSelectKey: () => Promise<void>;
+  }
+}
 
 const App: React.FC = () => {
   const [mode, setMode] = useState<'gen' | 'vis'>('gen');
@@ -23,10 +30,29 @@ const App: React.FC = () => {
   const [tokens, setTokens] = useState(0);
   const [preview, setPreview] = useState<{base64: string, mime: string} | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isKeyConnected, setIsKeyConnected] = useState<boolean | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    const checkKeyStatus = async () => {
+      // If process.env.API_KEY is present, we are likely good
+      if (process.env.API_KEY && process.env.API_KEY !== 'undefined') {
+        setIsKeyConnected(true);
+        return;
+      }
+      
+      // Otherwise check AI Studio platform
+      if (window.aistudio) {
+        const hasKey = await window.aistudio.hasSelectedApiKey();
+        setIsKeyConnected(hasKey);
+      } else {
+        setIsKeyConnected(false);
+      }
+    };
+    
+    checkKeyStatus();
+
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
@@ -41,6 +67,14 @@ const App: React.FC = () => {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ results: results.slice(0, 15), tokens }));
   }, [results, tokens]);
+
+  const handleConnectKey = async () => {
+    if (window.aistudio) {
+      await window.aistudio.openSelectKey();
+      // Assume success and proceed to mitigate race conditions
+      setIsKeyConnected(true);
+    }
+  };
 
   const handleAction = async (isDice = false) => {
     setLoading(true);
@@ -70,23 +104,42 @@ const App: React.FC = () => {
         }, ...prev]);
       }
     } catch (e: any) { 
-      console.error("ERRORE APPLICATIVO:", e);
-      
-      let message = "Si è verificato un errore imprevisto.";
-      if (e.message === "API_KEY_MISSING") {
-        message = "ERRORE: API Key non trovata. Assicurati di aver configurato la variabile d'ambiente API_KEY nelle impostazioni del tuo progetto.";
-      } else if (e.status === 403 || e.status === 401) {
-        message = "ERRORE: API Key non valida o non autorizzata. Controlla che la tua chiave sia corretta e attiva su Google AI Studio.";
-      } else if (e.status === 429) {
-        message = "ERRORE: Limite di richieste superato (Quota). Riprova tra un momento.";
-      } else {
-        message = `ERRORE: ${e.message || "Risposta non valida dal server."} Controlla la console del browser per i dettagli.`;
+      console.error("Application Error:", e);
+      if (e.message?.includes("entity was not found")) {
+        setIsKeyConnected(false);
       }
-      
-      alert(message);
+      alert(`Forge failed: ${e.message || "Unknown neural glitch"}`);
     }
     setLoading(false);
   };
+
+  // Connection Gate
+  if (isKeyConnected === false) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 bg-black">
+        <div className="glass max-w-md w-full rounded-[2.5rem] p-10 text-center flex flex-col items-center">
+          <div className="w-20 h-20 rounded-3xl bg-white flex items-center justify-center mb-8 shadow-[0_0_40px_rgba(255,255,255,0.1)]">
+            <i className="fas fa-plug text-black text-2xl"></i>
+          </div>
+          <h2 className="text-2xl font-black mb-4 uppercase tracking-tighter">Connection Required</h2>
+          <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-8 leading-relaxed">
+            To initialize PromptCraft Pro, you must link an API key from a paid Google Cloud project.
+          </p>
+          <Button onClick={handleConnectKey} className="w-full py-4 text-[10px] tracking-[0.2em]">
+            CONNECT AI STUDIO KEY
+          </Button>
+          <a 
+            href="https://ai.google.dev/gemini-api/docs/billing" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="mt-6 text-[9px] text-zinc-700 hover:text-zinc-400 uppercase font-black tracking-widest transition-colors"
+          >
+            Billing Documentation <i className="fas fa-external-link-alt ml-1"></i>
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white selection:bg-white/20">
@@ -100,7 +153,7 @@ const App: React.FC = () => {
           <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-black">
             <i className="fas fa-rocket text-sm"></i>
           </div>
-          <h1 className="text-xl font-black tracking-tighter uppercase">PromptCraft <span className="text-zinc-600 italic">Flash</span></h1>
+          <h1 className="text-xl font-black tracking-tighter uppercase">PromptCraft <span className="text-zinc-600 italic">Pro</span></h1>
         </div>
         <div className="flex items-center gap-6">
           <div className="hidden sm:block text-[9px] font-black uppercase tracking-widest text-zinc-600">
@@ -198,7 +251,7 @@ const App: React.FC = () => {
       </main>
 
       <footer className="p-12 border-t border-white/5 flex justify-center mt-20">
-        <p className="text-[10px] font-black text-zinc-800 uppercase tracking-[0.6em] italic">PROMPTCRAFT FLASH &bull; MMXXV</p>
+        <p className="text-[10px] font-black text-zinc-800 uppercase tracking-[0.6em] italic">PROMPTCRAFT PRO &bull; MMXXV</p>
       </footer>
     </div>
   );
