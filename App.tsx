@@ -7,14 +7,6 @@ import { OnboardingGuide } from './components/OnboardingGuide';
 
 const STORAGE_KEY = 'promptcraft_v4_data';
 
-// Fix: Merge methods into the existing AIStudio interface instead of redefining the property on Window to avoid modifier and type conflicts.
-declare global {
-  interface AIStudio {
-    hasSelectedApiKey: () => Promise<boolean>;
-    openSelectKey: () => Promise<void>;
-  }
-}
-
 const App: React.FC = () => {
   const [mode, setMode] = useState<'gen' | 'vis'>('gen');
   const [seed, setSeed] = useState('');
