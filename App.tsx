@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { VisualStyle, LightingMode, Perspective, GeneratedPrompt, ImageGenerator, PromptConfig } from './types';
 import { expandPrompt, extractPromptFromImage } from './services/geminiService';
@@ -7,13 +8,14 @@ import { OnboardingGuide } from './components/OnboardingGuide';
 
 const STORAGE_KEY = 'promptcraft_v4_data';
 
-// Fix: Merge methods into the existing AIStudio interface instead of redefining the property on Window to avoid modifier and type conflicts.
-// Wrap declare global in export {} to ensure it works correctly in a module context.
 export {};
 declare global {
   interface AIStudio {
     hasSelectedApiKey: () => Promise<boolean>;
     openSelectKey: () => Promise<void>;
+  }
+  interface Window {
+    aistudio?: AIStudio;
   }
 }
 
@@ -32,29 +34,12 @@ const App: React.FC = () => {
   const [tokens, setTokens] = useState(0);
   const [preview, setPreview] = useState<{base64: string, mime: string} | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [isKeyConnected, setIsKeyConnected] = useState<boolean | null>(null);
+  // Default to true to allow immediate use. We only flip to false if an API call explicitly fails with a "key required" error.
+  const [isKeyConnected, setIsKeyConnected] = useState<boolean>(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const checkKeyStatus = async () => {
-      // If process.env.API_KEY is present, we are likely good
-      if (process.env.API_KEY && process.env.API_KEY !== 'undefined') {
-        setIsKeyConnected(true);
-        return;
-      }
-      
-      // Otherwise check AI Studio platform
-      if (window.aistudio) {
-        const hasKey = await window.aistudio.hasSelectedApiKey();
-        setIsKeyConnected(hasKey);
-      } else {
-        setIsKeyConnected(false);
-      }
-    };
-    
-    checkKeyStatus();
-
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
@@ -75,6 +60,9 @@ const App: React.FC = () => {
       await window.aistudio.openSelectKey();
       // Assume success and proceed to mitigate race conditions
       setIsKeyConnected(true);
+    } else {
+      // If not in AI Studio context, we can't open the key picker.
+      alert("Please ensure an API Key is configured in your environment variables.");
     }
   };
 
@@ -107,29 +95,41 @@ const App: React.FC = () => {
       }
     } catch (e: any) { 
       console.error("Application Error:", e);
-      if (e.message?.includes("entity was not found")) {
+      // Trigger the connection gate only if the error specifically indicates a missing/invalid project setup
+      // or "entity not found" which is common when a key hasn't been picked for specific models.
+      const errorMessage = e.message?.toLowerCase() || "";
+      if (errorMessage.includes("entity was not found") || errorMessage.includes("api key") || errorMessage.includes("404") || errorMessage.includes("403")) {
         setIsKeyConnected(false);
+      } else {
+        alert(`Forge failed: ${e.message || "Unknown neural glitch"}`);
       }
-      alert(`Forge failed: ${e.message || "Unknown neural glitch"}`);
     }
     setLoading(false);
   };
 
-  // Connection Gate
+  // Connection Gate (only shown when explicitly required after a failed attempt)
   if (isKeyConnected === false) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-reddish-black">
-        <div className="glass max-w-md w-full rounded-[2.5rem] p-10 text-center flex flex-col items-center">
+        <div className="glass max-w-md w-full rounded-[2.5rem] p-10 text-center flex flex-col items-center border border-light-red/10 shadow-2xl">
           <div className="w-20 h-20 rounded-3xl bg-light-red flex items-center justify-center mb-8 shadow-[0_0_40px_rgba(255,232,232,0.1)]">
             <i className="fas fa-plug text-deep-red text-2xl"></i>
           </div>
-          <h2 className="text-2xl font-black mb-4 uppercase tracking-tighter">Connection Required</h2>
+          <h2 className="text-2xl font-black mb-4 uppercase tracking-tighter text-light-red">Connection Required</h2>
           <p className="text-medium-red text-[10px] font-bold uppercase tracking-widest mb-8 leading-relaxed">
-            To initialize PromptCraft Pro, you must link an API key from a paid Google Cloud project.
+            The neural engine requires a linked API key from a paid Google Cloud project to proceed with high-precision generation.
           </p>
-          <Button onClick={handleConnectKey} className="w-full py-4 text-[10px] tracking-[0.2em]">
-            CONNECT AI STUDIO KEY
-          </Button>
+          
+          {window.aistudio ? (
+            <Button onClick={handleConnectKey} className="w-full py-4 text-[10px] tracking-[0.2em]">
+              CONNECT AI STUDIO KEY
+            </Button>
+          ) : (
+            <div className="p-6 bg-deep-red/50 rounded-2xl border border-light-red/10 w-full text-[10px] uppercase font-bold text-light-red tracking-widest leading-relaxed">
+              Neural injection failed. Ensure your environment has a valid <code className="text-light-red">API_KEY</code> or that you are in an supported interface.
+            </div>
+          )}
+          
           <a 
             href="https://ai.google.dev/gemini-api/docs/billing" 
             target="_blank" 
@@ -138,6 +138,13 @@ const App: React.FC = () => {
           >
             Billing Documentation <i className="fas fa-external-link-alt ml-1"></i>
           </a>
+
+          <button 
+            onClick={() => setIsKeyConnected(true)} 
+            className="mt-8 text-[8px] text-dark-red hover:text-light-red uppercase tracking-[0.3em] font-black border-b border-transparent hover:border-light-red/20 transition-all"
+          >
+            Attempt Re-Entry to Core
+          </button>
         </div>
       </div>
     );
