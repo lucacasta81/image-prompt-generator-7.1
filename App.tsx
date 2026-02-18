@@ -8,6 +8,8 @@ import { OnboardingGuide } from './components/OnboardingGuide';
 const STORAGE_KEY = 'promptcraft_v4_data';
 
 // Fix: Merge methods into the existing AIStudio interface instead of redefining the property on Window to avoid modifier and type conflicts.
+// Wrap declare global in export {} to ensure it works correctly in a module context.
+export {};
 declare global {
   interface AIStudio {
     hasSelectedApiKey: () => Promise<boolean>;
@@ -116,13 +118,13 @@ const App: React.FC = () => {
   // Connection Gate
   if (isKeyConnected === false) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-bluish-black">
+      <div className="min-h-screen flex items-center justify-center p-6 bg-reddish-black">
         <div className="glass max-w-md w-full rounded-[2.5rem] p-10 text-center flex flex-col items-center">
-          <div className="w-20 h-20 rounded-3xl bg-light-blue flex items-center justify-center mb-8 shadow-[0_0_40px_rgba(235,244,255,0.1)]">
-            <i className="fas fa-plug text-deep-blue text-2xl"></i>
+          <div className="w-20 h-20 rounded-3xl bg-light-red flex items-center justify-center mb-8 shadow-[0_0_40px_rgba(255,232,232,0.1)]">
+            <i className="fas fa-plug text-deep-red text-2xl"></i>
           </div>
           <h2 className="text-2xl font-black mb-4 uppercase tracking-tighter">Connection Required</h2>
-          <p className="text-medium-blue text-[10px] font-bold uppercase tracking-widest mb-8 leading-relaxed">
+          <p className="text-medium-red text-[10px] font-bold uppercase tracking-widest mb-8 leading-relaxed">
             To initialize PromptCraft Pro, you must link an API key from a paid Google Cloud project.
           </p>
           <Button onClick={handleConnectKey} className="w-full py-4 text-[10px] tracking-[0.2em]">
@@ -132,7 +134,7 @@ const App: React.FC = () => {
             href="https://ai.google.dev/gemini-api/docs/billing" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="mt-6 text-[9px] text-dark-blue hover:text-medium-blue uppercase font-black tracking-widest transition-colors"
+            className="mt-6 text-[9px] text-dark-red hover:text-medium-red uppercase font-black tracking-widest transition-colors"
           >
             Billing Documentation <i className="fas fa-external-link-alt ml-1"></i>
           </a>
@@ -142,27 +144,27 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-bluish-black text-light-blue selection:bg-light-blue/20">
+    <div className="min-h-screen flex flex-col bg-reddish-black text-light-red selection:bg-light-red/20">
       {showOnboarding && <OnboardingGuide onComplete={() => {
         localStorage.setItem('promptcraft_visited', 'true');
         setShowOnboarding(false);
       }} />}
 
-      <header className="p-6 md:px-12 flex justify-between items-center border-b border-light-blue/5 sticky top-0 bg-bluish-black/80 backdrop-blur-xl z-50">
+      <header className="p-6 md:px-12 flex justify-between items-center border-b border-light-red/5 sticky top-0 bg-reddish-black/80 backdrop-blur-xl z-50">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-light-blue rounded-lg flex items-center justify-center text-deep-blue">
+          <div className="w-8 h-8 bg-light-red rounded-lg flex items-center justify-center text-deep-red">
             <i className="fas fa-rocket text-sm"></i>
           </div>
-          <h1 className="text-xl font-black tracking-tighter uppercase">PromptCraft <span className="text-dark-blue italic">Pro</span></h1>
+          <h1 className="text-xl font-black tracking-tighter uppercase">PromptCraft <span className="text-dark-red italic">Pro</span></h1>
         </div>
         <div className="flex items-center gap-6">
-          <div className="hidden sm:block text-[9px] font-black uppercase tracking-widest text-dark-blue">
+          <div className="hidden sm:block text-[9px] font-black uppercase tracking-widest text-dark-red">
             {`Usage: ${tokens.toLocaleString()} tokens`}
           </div>
           <nav className="flex items-center gap-4">
-            <div className="flex bg-deep-blue p-1 rounded-xl border border-light-blue/10">
-              <button onClick={() => setMode('gen')} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'gen' ? 'bg-light-blue text-bluish-black' : 'text-medium-blue hover:text-light-blue'}`}>Architect</button>
-              <button onClick={() => setMode('vis')} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'vis' ? 'bg-light-blue text-bluish-black' : 'text-medium-blue hover:text-light-blue'}`}>Vision</button>
+            <div className="flex bg-deep-red p-1 rounded-xl border border-light-red/10">
+              <button onClick={() => setMode('gen')} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'gen' ? 'bg-light-red text-reddish-black' : 'text-medium-red hover:text-light-red'}`}>Architect</button>
+              <button onClick={() => setMode('vis')} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'vis' ? 'bg-light-red text-reddish-black' : 'text-medium-red hover:text-light-red'}`}>Vision</button>
             </div>
           </nav>
         </div>
@@ -170,11 +172,11 @@ const App: React.FC = () => {
 
       <main className="flex-grow container mx-auto max-w-5xl px-6 py-12">
         <section className="mb-12">
-          <div className="glass p-2 rounded-3xl border-light-blue/10 flex flex-col md:flex-row gap-2 shadow-2xl">
+          <div className="glass p-2 rounded-3xl border-light-red/10 flex flex-col md:flex-row gap-2 shadow-2xl">
             {mode === 'gen' ? (
               <div className="flex-grow flex gap-2 p-2">
                 <input 
-                  className="flex-grow bg-transparent border-none outline-none px-6 text-xl font-bold placeholder:text-dark-blue text-light-blue"
+                  className="flex-grow bg-transparent border-none outline-none px-6 text-xl font-bold placeholder:text-dark-red text-light-red"
                   placeholder="Insert idea seed..."
                   value={seed}
                   onChange={e => setSeed(e.target.value)}
@@ -185,12 +187,12 @@ const App: React.FC = () => {
               </div>
             ) : (
               <div className="flex-grow flex gap-4 p-4 items-center">
-                <div className="w-16 h-16 bg-deep-blue rounded-2xl flex items-center justify-center border border-light-blue/5 overflow-hidden shrink-0" onClick={() => fileInputRef.current?.click()}>
-                  {preview ? <img src={preview.base64} className="w-full h-full object-cover" /> : <i className="fas fa-image text-dark-blue"></i>}
+                <div className="w-16 h-16 bg-deep-red rounded-2xl flex items-center justify-center border border-light-red/5 overflow-hidden shrink-0" onClick={() => fileInputRef.current?.click()}>
+                  {preview ? <img src={preview.base64} className="w-full h-full object-cover" /> : <i className="fas fa-image text-dark-red"></i>}
                 </div>
                 <div className="flex-grow">
-                  <p className="text-[9px] font-black uppercase text-dark-blue mb-1 tracking-widest">Vision Reference</p>
-                  <button onClick={() => fileInputRef.current?.click()} className="text-sm font-bold hover:text-medium-blue transition-colors uppercase tracking-widest">Choose Image</button>
+                  <p className="text-[9px] font-black uppercase text-dark-red mb-1 tracking-widest">Vision Reference</p>
+                  <button onClick={() => fileInputRef.current?.click()} className="text-sm font-bold hover:text-medium-red transition-colors uppercase tracking-widest">Choose Image</button>
                 </div>
                 <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={e => {
                   const file = e.target.files?.[0];
@@ -209,19 +211,19 @@ const App: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4">
-            <select className="glass p-3 rounded-xl text-[9px] font-black uppercase bg-bluish-black outline-none border-light-blue/5" value={config.style} onChange={e => setConfig({...config, style: e.target.value as any})}>
+            <select className="glass p-3 rounded-xl text-[9px] font-black uppercase bg-reddish-black outline-none border-light-red/5" value={config.style} onChange={e => setConfig({...config, style: e.target.value as any})}>
               {Object.values(VisualStyle).map(v => <option key={v} value={v}>{v}</option>)}
             </select>
-            <select className="glass p-3 rounded-xl text-[9px] font-black uppercase bg-bluish-black outline-none border-light-blue/5" value={config.lighting} onChange={e => setConfig({...config, lighting: e.target.value as any})}>
+            <select className="glass p-3 rounded-xl text-[9px] font-black uppercase bg-reddish-black outline-none border-light-red/5" value={config.lighting} onChange={e => setConfig({...config, lighting: e.target.value as any})}>
               {Object.values(LightingMode).map(v => <option key={v} value={v}>{v}</option>)}
             </select>
-            <select className="glass p-3 rounded-xl text-[9px] font-black uppercase bg-bluish-black outline-none border-light-blue/5" value={config.perspective} onChange={e => setConfig({...config, perspective: e.target.value as any})}>
+            <select className="glass p-3 rounded-xl text-[9px] font-black uppercase bg-reddish-black outline-none border-light-red/5" value={config.perspective} onChange={e => setConfig({...config, perspective: e.target.value as any})}>
               {Object.values(Perspective).map(v => <option key={v} value={v}>{v}</option>)}
             </select>
-            <select className="glass p-3 rounded-xl text-[9px] font-black uppercase bg-bluish-black outline-none border-light-blue/5" value={config.generator} onChange={e => setConfig({...config, generator: e.target.value as any})}>
+            <select className="glass p-3 rounded-xl text-[9px] font-black uppercase bg-reddish-black outline-none border-light-red/5" value={config.generator} onChange={e => setConfig({...config, generator: e.target.value as any})}>
               {Object.values(ImageGenerator).map(v => <option key={v} value={v}>{v}</option>)}
             </select>
-            <button onClick={() => setConfig({...config, isConcise: !config.isConcise})} className={`glass p-3 rounded-xl text-[9px] font-black uppercase border-light-blue/5 transition-all ${config.isConcise ? 'bg-light-blue text-bluish-black' : 'text-medium-blue hover:text-light-blue'}`}>
+            <button onClick={() => setConfig({...config, isConcise: !config.isConcise})} className={`glass p-3 rounded-xl text-[9px] font-black uppercase border-light-red/5 transition-all ${config.isConcise ? 'bg-light-red text-reddish-black' : 'text-medium-red hover:text-light-red'}`}>
               {config.isConcise ? 'Tags Only' : 'Full Detail'}
             </button>
           </div>
@@ -241,17 +243,17 @@ const App: React.FC = () => {
           ))}
           {results.length === 0 && !loading && (
             <div className="col-span-full py-24 text-center">
-              <div className="w-16 h-16 bg-deep-blue/50 rounded-full mx-auto flex items-center justify-center mb-6">
-                <i className="fas fa-terminal text-dark-blue text-2xl"></i>
+              <div className="w-16 h-16 bg-deep-red/50 rounded-full mx-auto flex items-center justify-center mb-6">
+                <i className="fas fa-terminal text-dark-red text-2xl"></i>
               </div>
-              <p className="text-dark-blue font-black uppercase tracking-[0.4em] text-[10px]">Ready for Injection</p>
+              <p className="text-dark-red font-black uppercase tracking-[0.4em] text-[10px]">Ready for Injection</p>
             </div>
           )}
         </section>
       </main>
 
-      <footer className="p-12 border-t border-light-blue/5 flex justify-center mt-20">
-        <p className="text-[10px] font-black text-dark-blue uppercase tracking-[0.6em] italic">PROMPTCRAFT PRO &bull; MMXXV</p>
+      <footer className="p-12 border-t border-light-red/5 flex justify-center mt-20">
+        <p className="text-[10px] font-black text-dark-red uppercase tracking-[0.6em] italic">PROMPTCRAFT PRO &bull; MMXXV</p>
       </footer>
     </div>
   );

@@ -34,21 +34,21 @@ export const PromptCard: React.FC<PromptCardProps> = ({ prompt, onCopy, onUpdate
   };
 
   return (
-    <div className="glass rounded-3xl overflow-hidden border-light-blue/5 flex flex-col group transition-all hover:border-light-blue/20">
+    <div className="glass rounded-3xl overflow-hidden border-light-red/5 flex flex-col group transition-all hover:border-light-red/20">
       {prompt.sourceImageUrl && (
-        <div className="aspect-[21/9] bg-bluish-black relative overflow-hidden">
+        <div className="aspect-[21/9] bg-reddish-black relative overflow-hidden">
           <img src={prompt.sourceImageUrl} className="w-full h-full object-cover opacity-50 grayscale hover:grayscale-0 transition-all duration-700" alt="Source Reference" />
-          <div className="absolute inset-0 bg-gradient-to-t from-deep-blue to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-deep-red to-transparent"></div>
         </div>
       )}
 
-      <div className="p-6 flex flex-col flex-grow bg-deep-blue/10">
+      <div className="p-6 flex flex-col flex-grow bg-deep-red/10">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <span className="px-2 py-0.5 bg-light-blue/5 text-[8px] font-black uppercase rounded border border-light-blue/10 text-medium-blue mb-2 inline-block tracking-widest">{prompt.config.style}</span>
-            <h3 className="text-[10px] font-black uppercase text-light-blue tracking-[0.2em]">{prompt.title}</h3>
+            <span className="px-2 py-0.5 bg-light-red/5 text-[8px] font-black uppercase rounded border border-light-red/10 text-medium-red mb-2 inline-block tracking-widest">{prompt.config.style}</span>
+            <h3 className="text-[10px] font-black uppercase text-light-red tracking-[0.2em]">{prompt.title}</h3>
           </div>
-          <button onClick={() => setIsEditing(!isEditing)} className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${isEditing ? 'bg-light-blue text-bluish-black' : 'bg-dark-blue text-medium-blue hover:text-light-blue border border-light-blue/5'}`}>
+          <button onClick={() => setIsEditing(!isEditing)} className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${isEditing ? 'bg-light-red text-reddish-black' : 'bg-dark-red text-medium-red hover:text-light-red border border-light-red/5'}`}>
             <i className={`fas ${isEditing ? 'fa-times' : 'fa-wand-magic'} text-[10px]`}></i>
           </button>
         </div>
@@ -56,7 +56,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({ prompt, onCopy, onUpdate
         {isEditing ? (
           <div className="space-y-3 mb-6">
             <textarea 
-              className="w-full bg-bluish-black border border-light-blue/5 rounded-2xl p-4 text-[11px] outline-none h-32 resize-none focus:border-light-blue/20 text-light-blue font-medium placeholder:text-dark-blue"
+              className="w-full bg-reddish-black border border-light-red/5 rounded-2xl p-4 text-[11px] outline-none h-32 resize-none focus:border-light-red/20 text-light-red font-medium placeholder:text-dark-red"
               placeholder="Refine this prompt (e.g., 'make it more dramatic', 'add more neon'...)"
               value={instruction}
               onChange={e => setInstruction(e.target.value)}
@@ -65,13 +65,13 @@ export const PromptCard: React.FC<PromptCardProps> = ({ prompt, onCopy, onUpdate
           </div>
         ) : (
           <div className="relative mb-8">
-            <p className="text-[13px] leading-relaxed text-light-blue font-medium tracking-tight">
+            <p className="text-[13px] leading-relaxed text-light-red font-medium tracking-tight">
               {prompt.content}
             </p>
           </div>
         )}
 
-        <div className="mt-auto pt-6 border-t border-light-blue/5">
+        <div className="mt-auto pt-6 border-t border-light-red/5">
           <Button variant={copied ? 'secondary' : 'primary'} className="w-full py-3 text-[9px] uppercase tracking-widest" onClick={handleCopy}>
             {copied ? (
               <><i className="fas fa-check mr-2"></i> Copied to Buffer</>

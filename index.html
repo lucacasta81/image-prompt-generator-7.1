@@ -14,11 +14,11 @@
               sans: ['Inter', 'sans-serif'],
             },
             colors: {
-              'light-blue': '#EBF4FF',
-              'medium-blue': '#9CB4D4',
-              'dark-blue': '#5A7AA3',
-              'deep-blue': '#2E3E5B',
-              'bluish-black': '#1A2132',
+              'light-red': '#FFE8E8',
+              'medium-red': '#D4A3A3',
+              'dark-red': '#A35C5C',
+              'deep-red': '#5C2E2E',
+              'reddish-black': '#211A1A',
             }
           }
         }
@@ -29,8 +29,8 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
         
         :root {
-            --bg-deep: #1A2132; /* bluish-black */
-            --accent-primary: #EBF4FF; /* light-blue */
+            --bg-deep: #211A1A; /* reddish-black */
+            --accent-primary: #FFE8E8; /* light-red */
         }
 
         body {
@@ -43,17 +43,17 @@
         }
 
         .glass {
-            background: rgba(46, 62, 91, 0.7); /* deep-blue with alpha */
+            background: rgba(92, 46, 46, 0.7); /* deep-red with alpha */
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(235, 244, 255, 0.08); /* light-blue with alpha */
+            border: 1px solid rgba(255, 232, 232, 0.08); /* light-red with alpha */
         }
 
         .nebula-bg {
             position: fixed;
             inset: 0;
             z-index: -1;
-            background: radial-gradient(circle at 50% 50%, #2E3E5B 0%, #1A2132 100%); /* deep-blue to bluish-black */
+            background: radial-gradient(circle at 50% 50%, #5C2E2E 0%, #211A1A 100%); /* deep-red to reddish-black */
         }
 
         .nebula-bg::after {

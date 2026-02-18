@@ -13,19 +13,19 @@ const STEPS: OnboardingStep[] = [
     title: "Neural Architect",
     description: "Initialize concepts into hyper-precision prompts. Use Entropy mode for randomized structural inspiration.",
     icon: "fa-terminal",
-    color: "text-light-blue"
+    color: "text-light-red"
   },
   {
     title: "Visual Deconstruct",
     description: "Reverse-engineer existing visual media into text-based blueprints using our native vision scan.",
     icon: "fa-fingerprint",
-    color: "text-medium-blue"
+    color: "text-medium-red"
   },
   {
     title: "Target Engine",
     description: "Calibrate output for specific synthesis models like Midjourney, DALL-E, or FLUX for optimized syntax.",
     icon: "fa-sliders",
-    color: "text-dark-blue"
+    color: "text-dark-red"
   }
 ];
 
@@ -47,41 +47,41 @@ export const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ onComplete }) 
   const step = STEPS[currentStep];
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-bluish-black/95 backdrop-blur-3xl animate-in fade-in duration-700">
-      <div className="glass max-w-sm w-full rounded-[2.5rem] overflow-hidden shadow-2xl border border-light-blue/5 flex flex-col items-center text-center p-10 relative">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-reddish-black/95 backdrop-blur-3xl animate-in fade-in duration-700">
+      <div className="glass max-w-sm w-full rounded-[2.5rem] overflow-hidden shadow-2xl border border-light-red/5 flex flex-col items-center text-center p-10 relative">
         
         <div className="flex gap-2 mb-10">
           {STEPS.map((_, i) => (
             <div 
               key={i} 
-              className={`h-0.5 transition-all duration-500 ${i === currentStep ? 'w-10 bg-light-blue' : 'w-2 bg-dark-blue'}`}
+              className={`h-0.5 transition-all duration-500 ${i === currentStep ? 'w-10 bg-light-red' : 'w-2 bg-dark-red'}`}
             />
           ))}
         </div>
 
-        <div className="w-24 h-24 rounded-3xl bg-deep-blue/50 border border-light-blue/5 flex items-center justify-center mb-8 shadow-inner">
-          <i className={`fas ${step.icon} text-4xl text-light-blue`}></i>
+        <div className="w-24 h-24 rounded-3xl bg-deep-red/50 border border-light-red/5 flex items-center justify-center mb-8 shadow-inner">
+          <i className={`fas ${step.icon} text-4xl text-light-red`}></i>
         </div>
 
-        <h2 className="text-3xl font-black mb-4 tracking-tighter text-light-blue uppercase italic">
+        <h2 className="text-3xl font-black mb-4 tracking-tighter text-light-red uppercase italic">
           {step.title}
         </h2>
         
-        <p className="text-medium-blue text-xs font-bold leading-relaxed mb-12 min-h-[4rem] uppercase tracking-wide">
+        <p className="text-medium-red text-xs font-bold leading-relaxed mb-12 min-h-[4rem] uppercase tracking-wide">
           {step.description}
         </p>
 
         <div className="w-full flex flex-col gap-4">
           <Button 
             onClick={next} 
-            className="w-full py-5 text-[10px] font-black uppercase tracking-[0.3em] shadow-[0_0_30px_rgba(235,244,255,0.1)]"
+            className="w-full py-5 text-[10px] font-black uppercase tracking-[0.3em] shadow-[0_0_30px_rgba(255,232,232,0.1)]"
           >
             {currentStep === STEPS.length - 1 ? "INITIALIZE" : "NEXT MODULE"}
           </Button>
           
           <button 
             onClick={onComplete}
-            className="text-[9px] text-dark-blue hover:text-light-blue font-black uppercase tracking-[0.4em] py-2 transition-all"
+            className="text-[9px] text-dark-red hover:text-light-red font-black uppercase tracking-[0.4em] py-2 transition-all"
           >
             SKIP
           </button>
