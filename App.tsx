@@ -70,8 +70,20 @@ const App: React.FC = () => {
         }, ...prev]);
       }
     } catch (e: any) { 
-      console.error(e);
-      alert("System Error: Interaction failed. Ensure environment API_KEY is valid.");
+      console.error("ERRORE APPLICATIVO:", e);
+      
+      let message = "Si è verificato un errore imprevisto.";
+      if (e.message === "API_KEY_MISSING") {
+        message = "ERRORE: API Key non trovata. Assicurati di aver configurato la variabile d'ambiente API_KEY nelle impostazioni del tuo progetto.";
+      } else if (e.status === 403 || e.status === 401) {
+        message = "ERRORE: API Key non valida o non autorizzata. Controlla che la tua chiave sia corretta e attiva su Google AI Studio.";
+      } else if (e.status === 429) {
+        message = "ERRORE: Limite di richieste superato (Quota). Riprova tra un momento.";
+      } else {
+        message = `ERRORE: ${e.message || "Risposta non valida dal server."} Controlla la console del browser per i dettagli.`;
+      }
+      
+      alert(message);
     }
     setLoading(false);
   };
