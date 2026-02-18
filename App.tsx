@@ -144,7 +144,6 @@ const App: React.FC = () => {
         setShowOnboarding(false);
       }} />}
       
-      {/* Alert se la chiave manca su Vercel */}
       {!hasEnvKey && !window.aistudio && (
         <div className="bg-white text-black p-3 text-center text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">
           Attenzione: Configura la API_KEY su Vercel per attivare il sistema
@@ -246,4 +245,10 @@ const App: React.FC = () => {
       </main>
 
       <footer className="p-12 border-t border-white/5 flex justify-center mt-20">
-        <p className="text-[10px] font-black text-zinc-800 uppercase tracking-[0.6
+        <p className="text-[10px] font-black text-zinc-800 uppercase tracking-[0.6em]">PROMPTCRAFT FLASH &bull; MMXXV</p>
+      </footer>
+    </div>
+  );
+};
+
+export default App;
