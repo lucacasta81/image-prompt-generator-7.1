@@ -1,7 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { PromptConfig, TokenUsage } from "../types";
 
-const PRO_MODEL = 'gemini-3-pro-preview';
+const PRO_MODEL = 'gemini-2.5-flash';
 
 const getModelConfig = (config: PromptConfig) => {
   return `Target: ${config.generator}. Style: ${config.style}. Lighting: ${config.lighting}. Perspective: ${config.perspective}. 
