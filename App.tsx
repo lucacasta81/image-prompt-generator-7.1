@@ -5,7 +5,7 @@ import { expandPrompt, extractPromptFromImage } from './services/geminiService';
 import { Button } from './components/Button';
 import { PromptCard } from './components/PromptCard';
 import { OnboardingGuide } from './components/OnboardingGuide';
-import { Loader2, Plug, ExternalLink, Rocket, Dices, Image as ImageIcon, Terminal } from 'lucide-react';
+import { Loader2, Plug, ExternalLink, Rocket, Dices, Image as ImageIcon, Terminal, Camera, Webcam } from 'lucide-react';
 
 const STORAGE_KEY = 'promptcraft_v4_data';
 
@@ -35,10 +35,100 @@ const App: React.FC = () => {
   const [tokens, setTokens] = useState(0);
   const [preview, setPreview] = useState<{base64: string, mime: string} | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [stream, setStream] = useState<MediaStream | null>(null);
   // Default to null to indicate initial checking state.
   const [isKeyConnected, setIsKeyConnected] = useState<boolean | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const MAX_IMAGE_SIZE = 1024; // Max width/height for compression
+  const JPEG_QUALITY = 0.8; // JPEG compression quality
+
+  const processImage = (base64: string, mime: string): Promise<{base64: string, mime: string}> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = base64;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_IMAGE_SIZE) {
+            height *= MAX_IMAGE_SIZE / width;
+            width = MAX_IMAGE_SIZE;
+          }
+        } else {
+          if (height > MAX_IMAGE_SIZE) {
+            width *= MAX_IMAGE_SIZE / height;
+            height = MAX_IMAGE_SIZE;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedBase64 = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+          resolve({ base64: compressedBase64, mime: 'image/jpeg' });
+        } else {
+          resolve({ base64, mime }); // Fallback if canvas context not available
+        }
+      };
+    });
+  };
+
+  const startCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      setStream(mediaStream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+        await videoRef.current.play();
+      }
+      setIsCameraActive(true);
+      setMode('vis'); // Switch to vision mode when camera is active
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      alert("Could not access camera. Please ensure permissions are granted.");
+      setIsCameraActive(false);
+    }
+  };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+    setIsCameraActive(false);
+  };
+
+  const capturePhoto = async () => {
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+        const base64 = canvas.toDataURL('image/png');
+        const processed = await processImage(base64, 'image/png');
+        setPreview(processed);
+        stopCamera();
+      }
+    }
+  };
+
+  useEffect(() => {
+    // Cleanup camera on unmount
+    return () => {
+      stopCamera();
+    };
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -205,8 +295,9 @@ const App: React.FC = () => {
           </div>
           <nav className="flex items-center gap-4">
             <div className="flex bg-deep-red p-1 rounded-xl border border-light-red/10">
-              <button onClick={() => setMode('gen')} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'gen' ? 'bg-light-red text-reddish-black' : 'text-medium-red hover:text-light-red'}`}>Architect</button>
-              <button onClick={() => setMode('vis')} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'vis' ? 'bg-light-red text-reddish-black' : 'text-medium-red hover:text-light-red'}`}>Vision</button>
+              <button onClick={() => { setMode('gen'); stopCamera(); }} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'gen' ? 'bg-light-red text-reddish-black' : 'text-medium-red hover:text-light-red'}`}>Architect</button>
+              <button onClick={() => { setMode('vis'); stopCamera(); }} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'vis' ? 'bg-light-red text-reddish-black' : 'text-medium-red hover:text-light-red'}`}>Vision</button>
+              <button onClick={startCamera} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${isCameraActive ? 'bg-light-red text-reddish-black' : 'text-medium-red hover:text-light-red'}`}><Webcam className="w-4 h-4" /></button>
             </div>
           </nav>
         </div>
@@ -227,6 +318,12 @@ const App: React.FC = () => {
                 <Button variant="ghost" className="px-4" onClick={() => handleAction(true)} disabled={loading}><Dices className="w-5 h-5" /></Button>
                 <Button onClick={() => handleAction()} isLoading={loading} disabled={!seed.trim()} className="rounded-2xl px-8">Forge</Button>
               </div>
+            ) : isCameraActive ? (
+              <div className="flex-grow flex flex-col gap-4 p-4 items-center relative">
+                <video ref={videoRef} className="w-full h-auto rounded-2xl bg-reddish-black border border-light-red/5" autoPlay playsInline></video>
+                <Button onClick={capturePhoto} isLoading={loading} className="rounded-2xl px-12">Capture</Button>
+                <Button variant="secondary" onClick={stopCamera} className="rounded-2xl px-12">Stop Camera</Button>
+              </div>
             ) : (
               <div className="flex-grow flex gap-4 p-4 items-center">
                 <div className="w-16 h-16 bg-deep-red rounded-2xl flex items-center justify-center border border-light-red/5 overflow-hidden shrink-0 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
@@ -235,13 +332,16 @@ const App: React.FC = () => {
                 <div className="flex-grow">
                   <p className="text-[9px] font-black uppercase text-dark-red mb-1 tracking-widest">Vision Reference</p>
                   <button onClick={() => fileInputRef.current?.click()} className="text-sm font-bold hover:text-medium-red transition-colors uppercase tracking-widest">Choose Image</button>
+                  <button onClick={startCamera} className="text-sm font-bold hover:text-medium-red transition-colors uppercase tracking-widest ml-4">Use Camera</button>
                 </div>
-                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={e => {
+                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={async e => {
                   const file = e.target.files?.[0];
                   if (file) {
                     const reader = new FileReader();
-                    reader.onload = (ev) => {
-                      setPreview({ base64: ev.target?.result as string, mime: file.type });
+                    reader.onload = async (ev) => {
+                      const base64 = ev.target?.result as string;
+                      const processed = await processImage(base64, file.type);
+                      setPreview(processed);
                       setMode('vis');
                     };
                     reader.readAsDataURL(file);
