@@ -10,7 +10,7 @@ const getModelConfig = (config: PromptConfig) => {
 
 export const expandPrompt = async (seed: string, config: PromptConfig) => {
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     const isSurprise = seed.startsWith("SURPRISE_ME:");
     
     const response = await ai.models.generateContent({
@@ -49,7 +49,7 @@ export const expandPrompt = async (seed: string, config: PromptConfig) => {
 
 export const extractPromptFromImage = async (base64: string, mime: string, config: PromptConfig) => {
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     
     const response = await ai.models.generateContent({
       model: PRO_MODEL,
@@ -69,7 +69,7 @@ export const extractPromptFromImage = async (base64: string, mime: string, confi
 
 export const modifyPrompt = async (current: string, instruction: string) => {
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     
     const response = await ai.models.generateContent({
       model: PRO_MODEL,

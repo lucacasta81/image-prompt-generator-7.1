@@ -5,6 +5,7 @@ import { expandPrompt, extractPromptFromImage } from './services/geminiService';
 import { Button } from './components/Button';
 import { PromptCard } from './components/PromptCard';
 import { OnboardingGuide } from './components/OnboardingGuide';
+import { Loader2, Plug, ExternalLink, Rocket, Dices, Image as ImageIcon, Terminal } from 'lucide-react';
 
 const STORAGE_KEY = 'promptcraft_v4_data';
 
@@ -132,7 +133,7 @@ const App: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-reddish-black">
         <div className="glass max-w-sm w-full rounded-[2.5rem] p-10 text-center flex flex-col items-center border border-light-red/10 shadow-2xl">
           <div className="w-16 h-16 rounded-3xl bg-light-red flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(255,232,232,0.1)]">
-            <i className="fas fa-spinner fa-spin text-deep-red text-2xl"></i>
+            <Loader2 className="w-8 h-8 text-deep-red animate-spin" />
           </div>
           <p className="text-light-red text-lg font-black uppercase tracking-wider">Initializing Neural Core...</p>
           <p className="text-dark-red text-[8px] mt-4 uppercase font-black tracking-widest">Awaiting system handshake</p>
@@ -147,7 +148,7 @@ const App: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center p-6 bg-reddish-black">
         <div className="glass max-w-md w-full rounded-[2.5rem] p-10 text-center flex flex-col items-center border border-light-red/10 shadow-2xl">
           <div className="w-20 h-20 rounded-3xl bg-light-red flex items-center justify-center mb-8 shadow-[0_0_40px_rgba(255,232,232,0.1)]">
-            <i className="fas fa-plug text-deep-red text-2xl"></i>
+            <Plug className="w-10 h-10 text-deep-red" />
           </div>
           <h2 className="text-2xl font-black mb-4 uppercase tracking-tighter text-light-red">Connection Required</h2>
           <p className="text-medium-red text-[10px] font-bold uppercase tracking-widest mb-8 leading-relaxed">
@@ -168,9 +169,9 @@ const App: React.FC = () => {
             href="https://ai.google.dev/gemini-api/docs/billing" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="mt-6 text-[9px] text-dark-red hover:text-medium-red uppercase font-black tracking-widest transition-colors"
+            className="mt-6 text-[9px] text-dark-red hover:text-medium-red uppercase font-black tracking-widest transition-colors flex items-center gap-1"
           >
-            Billing Documentation <i className="fas fa-external-link-alt ml-1"></i>
+            Billing Documentation <ExternalLink className="w-3 h-3" />
           </a>
 
           <button 
@@ -193,8 +194,8 @@ const App: React.FC = () => {
 
       <header className="p-6 md:px-12 flex justify-between items-center border-b border-light-red/5 sticky top-0 bg-reddish-black/80 backdrop-blur-xl z-50">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-light-red rounded-lg flex items-center justify-center text-deep-red">
-            <i className="fas fa-rocket text-sm"></i>
+          <div className="w-8 h-8 bg-light-red rounded-lg flex items-center justify-center text-reddish-black">
+            <Rocket className="w-4 h-4" />
           </div>
           <h1 className="text-xl font-black tracking-tighter uppercase">PromptCraft <span className="text-dark-red italic">Pro</span></h1>
         </div>
@@ -223,13 +224,13 @@ const App: React.FC = () => {
                   onChange={e => setSeed(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleAction()}
                 />
-                <Button variant="ghost" className="px-4" onClick={() => handleAction(true)} disabled={loading}><i className="fas fa-dice"></i></Button>
+                <Button variant="ghost" className="px-4" onClick={() => handleAction(true)} disabled={loading}><Dices className="w-5 h-5" /></Button>
                 <Button onClick={() => handleAction()} isLoading={loading} disabled={!seed.trim()} className="rounded-2xl px-8">Forge</Button>
               </div>
             ) : (
               <div className="flex-grow flex gap-4 p-4 items-center">
-                <div className="w-16 h-16 bg-deep-red rounded-2xl flex items-center justify-center border border-light-red/5 overflow-hidden shrink-0" onClick={() => fileInputRef.current?.click()}>
-                  {preview ? <img src={preview.base64} className="w-full h-full object-cover" /> : <i className="fas fa-image text-dark-red"></i>}
+                <div className="w-16 h-16 bg-deep-red rounded-2xl flex items-center justify-center border border-light-red/5 overflow-hidden shrink-0 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                  {preview ? <img src={preview.base64} className="w-full h-full object-cover" /> : <ImageIcon className="w-6 h-6 text-dark-red" />}
                 </div>
                 <div className="flex-grow">
                   <p className="text-[9px] font-black uppercase text-dark-red mb-1 tracking-widest">Vision Reference</p>
@@ -285,7 +286,7 @@ const App: React.FC = () => {
           {results.length === 0 && !loading && (
             <div className="col-span-full py-24 text-center">
               <div className="w-16 h-16 bg-deep-red/50 rounded-full mx-auto flex items-center justify-center mb-6">
-                <i className="fas fa-terminal text-dark-red text-2xl"></i>
+                <Terminal className="w-8 h-8 text-dark-red" />
               </div>
               <p className="text-dark-red font-black uppercase tracking-[0.4em] text-[10px]">Ready for Injection</p>
             </div>

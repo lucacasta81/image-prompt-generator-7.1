@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { GeneratedPrompt, TokenUsage } from '../types';
 import { Button } from './Button';
 import { modifyPrompt } from '../services/geminiService';
+import { Wand2, X, Check, Copy } from 'lucide-react';
 
 interface PromptCardProps {
   prompt: GeneratedPrompt;
@@ -49,7 +50,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({ prompt, onCopy, onUpdate
             <h3 className="text-[10px] font-black uppercase text-light-red tracking-[0.2em]">{prompt.title}</h3>
           </div>
           <button onClick={() => setIsEditing(!isEditing)} className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${isEditing ? 'bg-light-red text-reddish-black' : 'bg-dark-red text-medium-red hover:text-light-red border border-light-red/5'}`}>
-            <i className={`fas ${isEditing ? 'fa-times' : 'fa-wand-magic'} text-[10px]`}></i>
+            {isEditing ? <X className="w-4 h-4" /> : <Wand2 className="w-4 h-4" />}
           </button>
         </div>
 
@@ -74,9 +75,9 @@ export const PromptCard: React.FC<PromptCardProps> = ({ prompt, onCopy, onUpdate
         <div className="mt-auto pt-6 border-t border-light-red/5">
           <Button variant={copied ? 'secondary' : 'primary'} className="w-full py-3 text-[9px] uppercase tracking-widest" onClick={handleCopy}>
             {copied ? (
-              <><i className="fas fa-check mr-2"></i> Copied to Buffer</>
+              <><Check className="w-3 h-3 mr-2" /> Copied to Buffer</>
             ) : (
-              <><i className="fas fa-copy mr-2 opacity-50"></i> Capture Prompt</>
+              <><Copy className="w-3 h-3 mr-2 opacity-50" /> Capture Prompt</>
             )}
           </Button>
         </div>
