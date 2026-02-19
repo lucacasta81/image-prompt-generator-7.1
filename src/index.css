@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --bg-deep: #211A1A;
-  --accent-primary: #FFE8E8;
+  --bg-deep: #1A211A;
+  --accent-primary: #E8FFE8;
 }
 
 body {
@@ -17,17 +17,17 @@ body {
 }
 
 .glass {
-  background: rgba(92, 46, 46, 0.7);
+  background: rgba(46, 92, 46, 0.7);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 232, 232, 0.08);
+  border: 1px solid rgba(232, 255, 232, 0.08);
 }
 
 .nebula-bg {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: radial-gradient(circle at 50% 50%, #5C2E2E 0%, #211A1A 100%);
+  background: radial-gradient(circle at 50% 50%, #2E5C2E 0%, #1A211A 100%);
 }
 
 .nebula-bg::after {

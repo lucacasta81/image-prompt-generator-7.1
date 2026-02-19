@@ -9,11 +9,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        'light-red': '#FFE8E8',
-        'medium-red': '#D4A3A3',
-        'dark-red': '#A35C5C',
-        'deep-red': '#5C2E2E',
-        'reddish-black': '#211A1A',
+        'light-green': '#E8FFE8',
+        'medium-green': '#A3D4A3',
+        'dark-green': '#5CA35C',
+        'deep-green': '#2E5C2E',
+        'greenish-black': '#1A211A',
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],

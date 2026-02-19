@@ -1,5 +1,5 @@
 {
-  "name": "PromptCraft AI Pro",
-  "description": "Advanced prompt engineering suite powered by Gemini 3 Pro.",
+  "name": "PromptCraft AI Pro (Italiano)",
+  "description": "Suite avanzata di prompt engineering con Gemini. Interfaccia in italiano, tema verde scuro e nero.",
   "requestFramePermissions": ["camera"]
 }
