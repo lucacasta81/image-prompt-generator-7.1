@@ -5,7 +5,7 @@ import { expandPrompt, extractPromptFromImage } from './services/geminiService';
 import { Button } from './components/Button';
 import { PromptCard } from './components/PromptCard';
 import { OnboardingGuide } from './components/OnboardingGuide';
-import { Loader2, Plug, ExternalLink, Rocket, Dices, Image as ImageIcon, Terminal, Camera, Webcam } from 'lucide-react';
+import { Loader2, Plug, ExternalLink, Rocket, Dices, Image as ImageIcon, Terminal } from 'lucide-react';
 
 const STORAGE_KEY = 'promptcraft_v4_data';
 
@@ -35,13 +35,10 @@ const App: React.FC = () => {
   const [tokens, setTokens] = useState(0);
   const [preview, setPreview] = useState<{base64: string, mime: string} | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [isCameraActive, setIsCameraActive] = useState(false);
-  const [stream, setStream] = useState<MediaStream | null>(null);
   // Default to null to indicate initial checking state.
   const [isKeyConnected, setIsKeyConnected] = useState<boolean | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   const MAX_IMAGE_SIZE = 1024; // Max width/height for compression
   const JPEG_QUALITY = 0.8; // JPEG compression quality
@@ -82,54 +79,6 @@ const App: React.FC = () => {
     });
   };
 
-  const startCamera = async () => {
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
-      setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        await videoRef.current.play();
-      }
-      setIsCameraActive(true);
-      setMode('vis'); // Switch to vision mode when camera is active
-    } catch (err) {
-      console.error("Error accessing camera:", err);
-      alert("Could not access camera. Please ensure permissions are granted.");
-      setIsCameraActive(false);
-    }
-  };
-
-  const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
-    }
-    setIsCameraActive(false);
-  };
-
-  const capturePhoto = async () => {
-    if (videoRef.current) {
-      const canvas = document.createElement('canvas');
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-        const base64 = canvas.toDataURL('image/png');
-        const processed = await processImage(base64, 'image/png');
-        setPreview(processed);
-        stopCamera();
-      }
-    }
-  };
-
-  useEffect(() => {
-    // Cleanup camera on unmount
-    return () => {
-      stopCamera();
-    };
-  }, []);
-
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -151,10 +100,6 @@ const App: React.FC = () => {
           // If there's an error checking the key, assume it's not connected or issue exists.
           setIsKeyConnected(false); 
         }
-      } else {
-        // If not in AI Studio context, assume API_KEY is available via process.env
-        // Subsequent API calls will trigger the connection gate if it's not.
-        setIsKeyConnected(true); 
       }
     };
     checkApiKey();
@@ -294,10 +239,9 @@ const App: React.FC = () => {
             {`Utilizzo: ${tokens.toLocaleString()} token`}
           </div>
           <nav className="flex items-center gap-4">
-            <div className="flex bg-deep-green p-1 rounded-xl border border-light-green/10">
-              <button onClick={() => { setMode('gen'); stopCamera(); }} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'gen' ? 'bg-light-green text-greenish-black' : 'text-medium-green hover:text-light-green'}`}>Architetto</button>
-              <button onClick={() => { setMode('vis'); stopCamera(); }} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'vis' ? 'bg-light-green text-greenish-black' : 'text-medium-green hover:text-light-green'}`}>Visione</button>
-              <button onClick={startCamera} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${isCameraActive ? 'bg-light-green text-greenish-black' : 'text-medium-green hover:text-light-green'}`}><Webcam className="w-4 h-4" /></button>
+            <div className="flex flex-col xs:flex-row bg-deep-green p-1 rounded-xl border border-light-green/10">
+              <button onClick={() => { setMode('gen'); }} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'gen' ? 'bg-light-green text-greenish-black' : 'text-medium-green hover:text-light-green'}`}>Architetto</button>
+              <button onClick={() => { setMode('vis'); }} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'vis' ? 'bg-light-green text-greenish-black' : 'text-medium-green hover:text-light-green'}`}>Visione</button>
             </div>
           </nav>
         </div>
@@ -307,7 +251,7 @@ const App: React.FC = () => {
         <section className="mb-12">
           <div className="glass p-2 rounded-3xl border-light-green/10 flex flex-col md:flex-row gap-2 shadow-2xl">
             {mode === 'gen' ? (
-              <div className="flex-grow flex gap-2 p-2">
+              <div className="flex-grow flex flex-col sm:flex-row gap-2 p-2">
                 <input 
                   className="flex-grow bg-transparent border-none outline-none px-6 text-xl font-bold placeholder:text-dark-green text-light-green"
                   placeholder="Inserisci l'idea seed..."
@@ -315,26 +259,21 @@ const App: React.FC = () => {
                   onChange={e => setSeed(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleAction()}
                 />
-                <Button variant="ghost" className="px-4" onClick={() => handleAction(true)} disabled={loading}><Dices className="w-5 h-5" /></Button>
-                <Button onClick={() => handleAction()} isLoading={loading} disabled={!seed.trim()} className="rounded-2xl px-8">Forgia</Button>
-              </div>
-            ) : isCameraActive ? (
-              <div className="flex-grow flex flex-col gap-4 p-4 items-center relative">
-                <video ref={videoRef} className="w-full h-auto rounded-2xl bg-greenish-black border border-light-green/5" autoPlay playsInline></video>
-                <Button onClick={capturePhoto} isLoading={loading} className="rounded-2xl px-12">Cattura</Button>
-                <Button variant="secondary" onClick={stopCamera} className="rounded-2xl px-12">Ferma Fotocamera</Button>
+                <div className="flex gap-2">
+                  <Button variant="ghost" className="px-4 flex-grow" onClick={() => handleAction(true)} disabled={loading}><Dices className="w-5 h-5" /></Button>
+                  <Button onClick={() => handleAction()} isLoading={loading} disabled={!seed.trim()} className="rounded-2xl px-8 flex-grow">Forgia</Button>
+                </div>
               </div>
             ) : (
-              <div className="flex-grow flex gap-4 p-4 items-center">
+              <div className="flex-grow flex flex-col sm:flex-row gap-4 p-4 items-center">
                 <div className="w-16 h-16 bg-deep-green rounded-2xl flex items-center justify-center border border-light-green/5 overflow-hidden shrink-0 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                   {preview ? <img src={preview.base64} className="w-full h-full object-cover" /> : <ImageIcon className="w-6 h-6 text-dark-green" />}
                 </div>
                 <div className="flex-grow">
                   <p className="text-[9px] font-black uppercase text-dark-green mb-1 tracking-widest">Riferimento Visione</p>
-                  <button onClick={() => fileInputRef.current?.click()} className="text-sm font-bold hover:text-medium-green transition-colors uppercase tracking-widest">Scegli Immagine</button>
-                  <button onClick={startCamera} className="text-sm font-bold hover:text-medium-green transition-colors uppercase tracking-widest ml-4">Usa Fotocamera</button>
+                  <button onClick={() => fileInputRef.current?.click()} className="text-sm font-bold hover:text-medium-green transition-colors uppercase tracking-widest">Scegli o Scatta Immagine</button>
                 </div>
-                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={async e => {
+                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" capture="environment" onChange={async e => {
                   const file = e.target.files?.[0];
                   if (file) {
                     const reader = new FileReader();
@@ -347,12 +286,12 @@ const App: React.FC = () => {
                     reader.readAsDataURL(file);
                   }
                 }} />
-                <Button onClick={() => handleAction()} isLoading={loading} disabled={!preview} className="rounded-2xl px-12">Decostruisci</Button>
+                <Button onClick={() => handleAction()} isLoading={loading} disabled={!preview} className="rounded-2xl px-12 sm:ml-auto">Estrapola</Button>
               </div>
             )}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 mt-4">
             <select className="glass p-3 rounded-xl text-[9px] font-black uppercase bg-greenish-black outline-none border-light-green/5" value={config.style} onChange={e => setConfig({...config, style: e.target.value as any})}>
               {Object.values(VisualStyle).map(v => <option key={v} value={v}>{v}</option>)}
             </select>
@@ -394,7 +333,7 @@ const App: React.FC = () => {
         </section>
       </main>
 
-      <footer className="p-12 border-t border-light-green/5 flex justify-center mt-20">
+      <footer className="p-6 md:p-12 border-t border-light-green/5 flex justify-center mt-20">
         <p className="text-[10px] font-black text-dark-green uppercase tracking-[0.6em] italic">PROMPTCRAFT PRO &bull; MMXXV</p>
       </footer>
     </div>
